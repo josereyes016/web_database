@@ -1,5 +1,5 @@
 /*
- * 
+ *
  * Using this for reference:
  *
         <input id="value" type="text" name="insert"></input>
@@ -17,27 +17,29 @@ window.onload = function() {
         // This is the global name of a database
         // Then you can create as many tables as nesssary
         // Note I will use db as the handle
-        db = new Dexie('words'); 
+        db = new Dexie('words');
 
         db.version(1).stores({
 
             snippets: 'id,snip'
-        });       
+        });
 
-        db.snippets.put(
-        
-            {id : 'bash', snip: 'for i in x; do something; done'}
-//            {id: "bash if clause", snip: "if [ bool ]; then something; fi"},
-  //          {id: "view numbers in vi",snip: ":set number"},
-    //        {id: "go to the end of line in vi",snip: "$" }
+        db.snippets.bulkPut([
+
+            {id : 'bash', snip: 'for i in x; do something; done'},
+            {id: "bash if clause", snip: "if [ bool ]; then something; fi"},
+            {id: "view numbers in vi",snip: ":set number"},
+            {id: "go to the end of line in vi",snip: "$" }]
         ).then( function() {
-            var test = db.snippets.get('bash');
-        
-            alert(test.snip);
-        }).catch( function (error) {
-        
+
+            return db.snippets.get('bash');
+
+        }).then(function(snip){
+            alert(snip.snip)
+      }).catch( function (error) {
+
             alert('oops' + error);
-        
+
         });
 
     var put_button = document.getElementById('put');
@@ -50,24 +52,24 @@ window.onload = function() {
 
 function add_user_input(){
 
-    var value = document.getElementById('value').innerHTML();
+    var value = document.getElementById('value').value;
 
     var key = prompt("What id do you wish to give this text");
 
-    word_table.set([
-        
-        {id: key, snip: value}
-    
-    ]);
+    db.snippets.put({id: key, snip: value}).catch (
+      function(error) {
+        console.log("There was an error" + error);
+      }
+    );
 
 }
 
 function get_user_request() {
 
-    var key = document.getElementById('key').innerHTML;
-
-    var result = word_table.get({id: key});
-
-    alert(result);
-
+    var key = document.getElementById('key').value;
+    console.log(key);
+    db.snippets.get(key).then(function (item){
+      console.log(item);
+      alert(item.snip);
+    });
 }
